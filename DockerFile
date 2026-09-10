@@ -1,0 +1,25 @@
+
+
+
+FROM golang:1.27.0-alpine AS builder
+WORKDIR /app
+# Устанавливаем delve
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+FROM golang:1.27.0-alpine
+WORKDIR /app
+RUN apk --no-cache add tzdata
+
+COPY --from=builder /app .
+COPY --from=builder /go/bin/dlv /usr/local/bin/dlv
+# RUN chmod +x /app/backend
+# Добавляем Go в PATH
+
+EXPOSE 8080 12345
+# dlv debug перекомпилирует на лету
+CMD ["dlv", "debug", "./cmd/server", "--headless", "--listen=:12345", "--api-version=2", "--accept-multiclient", "--continue"]

@@ -1,0 +1,346 @@
+basePath: /
+definitions:
+  test_astral_internal_controller_DTO_request.Login:
+    properties:
+      login:
+        type: string
+      pswd:
+        type: string
+    type: object
+  test_astral_internal_controller_DTO_request.Registration:
+    properties:
+      login:
+        type: string
+      pswd:
+        type: string
+      token:
+        example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        type: string
+    type: object
+  test_astral_internal_controller_DTO_response.APIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/test_astral_internal_controller_DTO_response.DataDetail'
+      error:
+        $ref: '#/definitions/test_astral_internal_controller_DTO_response.ErrorDetail'
+      response:
+        $ref: '#/definitions/test_astral_internal_controller_DTO_response.ResponseDetail'
+    type: object
+  test_astral_internal_controller_DTO_response.DataDetail:
+    properties:
+      content:
+        description: |-
+          UserID   int    `json:"user_id,omitempty"`
+          Username string `json:"username,omitempty"`
+          Email    string `json:"email,omitempty"`
+    type: object
+  test_astral_internal_controller_DTO_response.DocsListData:
+    properties:
+      docs:
+        items:
+          $ref: '#/definitions/test_astral_internal_controller_DTO_response.Document'
+        type: array
+    type: object
+  test_astral_internal_controller_DTO_response.DocsListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/test_astral_internal_controller_DTO_response.DocsListData'
+    type: object
+  test_astral_internal_controller_DTO_response.Document:
+    properties:
+      createdAt:
+        type: string
+      fileData:
+        description: BYTEA
+        items:
+          format: int32
+          type: integer
+        type: array
+      id:
+        type: string
+      isFile:
+        type: boolean
+      isPublic:
+        type: boolean
+      jsondata:
+        description: JSONB
+        items:
+          format: int32
+          type: integer
+        type: array
+      mime:
+        type: string
+      name:
+        type: string
+      ownerID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  test_astral_internal_controller_DTO_response.ErrorDetail:
+    properties:
+      code:
+        type: integer
+      text:
+        type: string
+    type: object
+  test_astral_internal_controller_DTO_response.ResponseDetail:
+    properties:
+      login:
+        type: string
+      token:
+        type: string
+    type: object
+  test_astral_internal_controller_DTO_response.UploadData:
+    properties:
+      file:
+        type: string
+      json: {}
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: apishka!
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Backend API
+  version: "1.0"
+paths:
+  /api/auth:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя и возврат токена
+      parameters:
+      - description: Данные на авторизацию
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/test_astral_internal_controller_DTO_request.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Авторизовались
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+      summary: Авторизация пользователя
+      tags:
+      - user
+  /api/auth/{token}:
+    delete:
+      consumes:
+      - application/json
+      description: Авторизация пользователя и возврат токена
+      parameters:
+      - description: Токен
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Удалили
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+      summary: Удаление токена
+      tags:
+      - user
+  /api/docs:
+    get:
+      consumes:
+      - application/json
+      description: Получение документа
+      parameters:
+      - description: Токен авторизации
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: Кол-во документов
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Получили документы
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.DocsListResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+      summary: Получение документа
+      tags:
+      - docs
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает документ
+      parameters:
+      - description: JSON с параметрами запроса
+        in: formData
+        name: meta
+        required: true
+        type: string
+      - description: JSON с данными документа
+        in: formData
+        name: json
+        type: string
+      - description: Файл документа
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Загрузились
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+      summary: Загрузка документа
+      tags:
+      - docs
+  /api/docs/{token}/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление документа по ID
+      parameters:
+      - description: Токен авторизации
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: ID документа
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Удалили документ
+          schema:
+            type: file
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+      summary: Удаление документа по ID
+      tags:
+      - docs
+    get:
+      consumes:
+      - application/json
+      description: Получение документа по ID
+      parameters:
+      - description: Токен авторизации
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: ID документа
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - ' image/jpeg'
+      - ' image/png'
+      - ' image/gif'
+      - ' image/webp'
+      responses:
+        "200":
+          description: Получили документы
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.DocsListResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.UploadData'
+      summary: Получение документа по ID
+      tags:
+      - docs
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя и возвращает логин
+      parameters:
+      - description: Данные нового пользака
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/test_astral_internal_controller_DTO_request.Registration'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Зарегестрировались
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/test_astral_internal_controller_DTO_response.APIResponse'
+      summary: Регистрация пользователя
+      tags:
+      - user
+schemes:
+- http
+swagger: "2.0"

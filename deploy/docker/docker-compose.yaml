@@ -1,0 +1,86 @@
+
+name: test-astral
+
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-database
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PG_DATA=${PG_DATA}
+      - VOLUMEDATA=${VOLUMEDATA}
+    volumes:
+      - db-data:${VOLUMEDATA:-/var/lib/postgresql/data}
+    networks:
+      - backend-net
+    ports:
+      - "5432:5432"  
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s  
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: DockerFile
+   
+    container_name: ${COMPOSE_PROJECT_NAME}-backend
+    restart: always
+    environment:
+      # Приложение
+      - GOFLAGS=-gcflags=all=-N 
+      - DLV_LISTEN=0.0.0.0:12345
+      - ADRESS=${ADRESS}
+      - DATADIR=${DATADIR}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - CACHE_TTL=${CACHE_TTL}
+      - MAX_UPLOAD_SIZE=${MAX_UPLOAD_SIZE}
+      - MAX_CACHE_ITEM=${MAX_CACHE_ITEM}
+      # Postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "8081:8080"
+      - "12345:12345"  # Порт для Delve debugger
+    networks:
+      - backend-net
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ../../../test_astral:/app  
+
+  migration:
+    build:
+      context: ../../migration
+      dockerfile: docker/Dockerfile
+    container_name: migration
+    environment:
+      - DATA_MIGRATIONS=${DATA_MIGRATIONS}
+          # Postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+    - backend-net 
+networks:
+  backend-net:
+      
+volumes:
+  db-data:
