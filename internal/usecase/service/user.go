@@ -24,7 +24,7 @@ func (u *UserService) CreateUser(login string, password string) (string, error) 
 	fmt.Println("Создаем в usecase")
 	hash, err := hashPassword(password)
 	if err != nil {
-		return "", fmt.Errorf("Ошибка хэшированя пароля", err.Error())
+		return "", fmt.Errorf("Ошибка хэшированя пароля: %s", err.Error())
 	}
 	fmt.Println("Создали пароль")
 

@@ -33,9 +33,10 @@ func (s *V1) RegisterRoutesFile(r chi.Router) {
 // @Param meta formData string true "JSON с параметрами запроса"
 // @Param json formData string false "JSON с данными документа"
 // @Param file formData file true "Файл документа"
-// @Success      200  {object}  response.UploadData  "Загрузились"
-// @Failure      400  {object}   response.UploadData   "Неверный запрос"
-// @Failure      500  {object}   response.UploadData  "Внутренняя ошибка сервера"
+// @Success      200  {object}  response.UploadData  "Файл загружен"
+// @Failure      400  {object}  response.APIResponse  "Неверный запрос"
+// @Failure      401  {object}  response.APIResponse  "Не авторизовались"
+// @Failure      500  {object}  response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs [post]
 func (s *V1) UploadDocs(w http.ResponseWriter, r *http.Request) {
 	// Ограничимся на 32 метра
@@ -122,16 +123,17 @@ func (s *V1) UploadDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetDocs godoc
-// @Summary      Получение документа
-// @Description  Получение документа
+// @Summary      Получение документов
+// @Description  Получение документов
 // @Tags         docs
-// @Accept 		json
+// @Accept 		 json
 // @Produce      json
 // @Param        token  query     string  true   "Токен авторизации"
 // @Param        limit  query     int     false  "Кол-во документов"
 // @Success      200  {object}  response.DocsListResponse  "Получили документы"
-// @Failure      400  {object}   response.UploadData   "Неверный запрос"
-// @Failure      500  {object}   response.UploadData  "Внутренняя ошибка сервера"
+// @Failure      400  {object}   response.APIResponse   "Неверный запрос"
+// @Failure      401  {object}  response.APIResponse  "Не авторизовались"
+// @Failure      500  {object}   response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs [get]
 func (s *V1) GetDocs(w http.ResponseWriter, r *http.Request) {
 	// 1. Токен
@@ -171,7 +173,7 @@ func (s *V1) GetDocs(w http.ResponseWriter, r *http.Request) {
 	if len(docs.Data.Docs) == 0 {
 		docs, err = s.F.ListDocuments(limit)
 		if err != nil {
-			sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка получения списков документов", err.Error()))
+			sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка получения списков документов: %s", err.Error()))
 			return
 		}
 	}
@@ -197,8 +199,9 @@ func (s *V1) GetDocs(w http.ResponseWriter, r *http.Request) {
 // @Param        id  query     string     true  "ID документа"
 // @Success      200  {file}  binary  "Изображение"
 // @Success      200  {object}  response.DocsListResponse  "Получили документы"
-// @Failure      400  {object}   response.UploadData   "Неверный запрос"
-// @Failure      500  {object}   response.UploadData  "Внутренняя ошибка сервера"
+// @Failure      400  {object}   response.APIResponse   "Неверный запрос"
+// @Failure      401  {object}  response.APIResponse  "Не авторизовались"
+// @Failure      500  {object}   response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs/{token}/{id} [get]
 func (s *V1) GetDocsById(w http.ResponseWriter, r *http.Request) {
 	// 1. Токен
@@ -232,7 +235,7 @@ func (s *V1) GetDocsById(w http.ResponseWriter, r *http.Request) {
 	if docs == nil {
 		docs, err = s.F.GetDocById(ID)
 		if err != nil {
-			sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка получения списков документов", err.Error()))
+			sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка получения документа: %s", err.Error()))
 			return
 		}
 	}
@@ -274,8 +277,9 @@ func (s *V1) GetDocsById(w http.ResponseWriter, r *http.Request) {
 // @Param        token  query     string  true   "Токен авторизации"
 // @Param        id  query     string     true  "ID документа"
 // @Success      200  {file}  response.DynamicResponse "Удалили документ"
-// @Failure      400  {object}   response.UploadData   "Неверный запрос"
-// @Failure      500  {object}   response.UploadData  "Внутренняя ошибка сервера"
+// @Failure      400  {object}   response.APIResponse   "Неверный запрос"
+// @Failure      401  {object}  response.APIResponse  "Не авторизовались"
+// @Failure      500  {object}   response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs/{token}/{id} [delete]
 func (s *V1) DeleteDocs(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
@@ -283,11 +287,6 @@ func (s *V1) DeleteDocs(w http.ResponseWriter, r *http.Request) {
 	token := q.Get("token")
 	if token == "" {
 		sendError(w, http.StatusUnauthorized, "Токен обязателен")
-		return
-	}
-
-	if _, err := s.U.GetSessionByToken(token); err != nil {
-		sendError(w, http.StatusUnauthorized, "Неверный токен")
 		return
 	}
 
@@ -303,7 +302,7 @@ func (s *V1) DeleteDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	err = s.F.DeleteDocById(ID)
 	if err != nil {
-		sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка удаления документа", err.Error()))
+		sendError(w, http.StatusInternalServerError, fmt.Sprintf("Ошибка удаления документа: %s", err.Error()))
 		return
 	}
 	// Удаляем из кэша
@@ -323,7 +322,7 @@ func validateMeta(meta request.UploadMeta) error {
 	if len(meta.Name) > 255 {
 		return fmt.Errorf("имя файла слишком длинное (макс. 255 символов)")
 	}
-
+	// Здесь надо еще проверить реально ли это meme
 	if meta.Mime == "" {
 		return fmt.Errorf("поле 'mime' обязательно")
 	}

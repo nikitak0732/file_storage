@@ -25,7 +25,7 @@ func NewCache(db *repo.FileRepo) *Cache {
 	return &Cache{Mu: sync.RWMutex{}, Cache: mp}
 }
 
-func (c Cache) GetDocs(limit int) *response.DocsListResponse {
+func (c *Cache) GetDocs(limit int) *response.DocsListResponse {
 
 	c.Mu.RLock()
 	defer c.Mu.RUnlock()
@@ -47,7 +47,7 @@ func (c Cache) GetDocs(limit int) *response.DocsListResponse {
 	}
 }
 
-func (c Cache) GetDocsById(id string) *response.Document {
+func (c *Cache) GetDocsById(id string) *response.Document {
 
 	c.Mu.RLock()
 	defer c.Mu.RUnlock()

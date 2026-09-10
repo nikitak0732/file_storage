@@ -58,7 +58,7 @@ services:
     security_opt:
       - seccomp:unconfined
     volumes:
-      - ../../../test_astral:/app  
+      - ../../:/app  
 
   migration:
     build:
