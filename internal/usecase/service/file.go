@@ -54,7 +54,7 @@ func (s *FileService) UploadDocument(
 	}
 
 	fmt.Println("Создали документ")
-	// 5. Возвращаем результат
+
 	return &response.UploadData{
 		JSON: jsonData,
 		File: meta.Name,

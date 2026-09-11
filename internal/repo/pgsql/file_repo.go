@@ -134,10 +134,6 @@ func (f *FileRepo) GetDocById(id string) (*response.Document, error) {
       
        
     `
-	// idUUID, err := uuid.Parse(id)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	var doc response.Document
 	err := f.pg.Postgres.QueryRow(query, string(id)).Scan(
 		&doc.ID,

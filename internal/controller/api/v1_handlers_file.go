@@ -83,7 +83,7 @@ func (s *V1) UploadDocs(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("Файл слишком большой (макс. %d MB)", maxFileSize/1024/1024))
 		return
 	}
-	var jsonData interface{}
+	var jsonData any
 	jsonStr := r.FormValue("json")
 	if jsonStr != "" {
 		if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
@@ -210,11 +210,6 @@ func (s *V1) GetDocsById(w http.ResponseWriter, r *http.Request) {
 	token := q.Get("token")
 	if token == "" {
 		sendError(w, http.StatusUnauthorized, "Токен обязателен")
-		return
-	}
-
-	if _, err := s.U.GetSessionByToken(token); err != nil {
-		sendError(w, http.StatusUnauthorized, "Неверный токен")
 		return
 	}
 

@@ -24,7 +24,7 @@ func InitServer(srv *service.UseCase, pg *postgres.Postgres, cfg *config.Config,
 	mux := http.NewServeMux()
 
 	r := NewRoutes(srv.File, srv.User, srv.Cache)
-
+	// Сюда можно еще что-то докинуть потом
 	handler := middleware.Chain(
 		mux,                       // базовый хендлер
 		middleware.WithRecovery(), // восстановление после паники

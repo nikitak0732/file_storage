@@ -63,14 +63,14 @@ func sendError(w http.ResponseWriter, code int, text string) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func sendData(w http.ResponseWriter, code int, text string) {
-	resp := &response.APIResponse{
-		Error: &response.ErrorDetail{
-			Code: code,
-			Text: text,
-		},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(resp)
-}
+// func sendData(w http.ResponseWriter, code int, text string) {
+// 	resp := &response.APIResponse{
+// 		Error: &response.ErrorDetail{
+// 			Code: code,
+// 			Text: text,
+// 		},
+// 	}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(code)
+// 	json.NewEncoder(w).Encode(resp)
+// }

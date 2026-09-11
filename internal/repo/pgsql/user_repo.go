@@ -19,7 +19,6 @@ func NewUserRepo(pg *postgres.Postgres) *UserRepo {
 }
 
 func (u *UserRepo) CreateUser(login string, password string) (string, error) {
-	fmt.Println("База")
 	_, err := u.GetDataUser(login)
 	fmt.Println(err)
 	if !errors.Is(err, repo.ErrUserNotFound) {

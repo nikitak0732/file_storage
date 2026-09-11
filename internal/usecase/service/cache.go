@@ -66,5 +66,6 @@ func (c *Cache) InsertData(doc *response.Document) {
 func (c *Cache) DeleteData(id string) {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
+	log.Println("Удалили из кэша")
 	delete(c.Cache, id)
 }
