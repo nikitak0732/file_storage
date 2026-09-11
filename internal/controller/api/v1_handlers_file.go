@@ -56,7 +56,7 @@ func (s *V1) UploadDocs(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("Ошибка парсинга meta: %s", err.Error()))
 		return
 	}
-	// 4. Проверка токена
+
 	if meta.Token == "" {
 		sendError(w, http.StatusUnauthorized, "Токен обязателен")
 		return
@@ -136,7 +136,7 @@ func (s *V1) UploadDocs(w http.ResponseWriter, r *http.Request) {
 // @Failure      500  {object}   response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs [get]
 func (s *V1) GetDocs(w http.ResponseWriter, r *http.Request) {
-	// 1. Токен
+
 	q := r.URL.Query()
 
 	token := q.Get("token")
@@ -204,7 +204,7 @@ func (s *V1) GetDocs(w http.ResponseWriter, r *http.Request) {
 // @Failure      500  {object}   response.APIResponse  "Внутренняя ошибка сервера"
 // @Router       /api/docs/{token}/{id} [get]
 func (s *V1) GetDocsById(w http.ResponseWriter, r *http.Request) {
-	// 1. Токен
+	
 	q := r.URL.Query()
 
 	token := q.Get("token")
