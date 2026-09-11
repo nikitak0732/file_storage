@@ -23,7 +23,7 @@ CREATE TABLE sessions (
     expires_at TIMESTAMPTZ
 );
 
--- JSON- и файловые документы.
+
 CREATE TABLE documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
